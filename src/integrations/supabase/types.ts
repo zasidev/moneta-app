@@ -14,7 +14,136 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bank_accounts: {
+        Row: {
+          balance: number | null
+          created_at: string
+          currency: string | null
+          gc_account_id: string
+          iban: string | null
+          id: string
+          last_synced_at: string | null
+          name: string | null
+          requisition_id: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number | null
+          created_at?: string
+          currency?: string | null
+          gc_account_id: string
+          iban?: string | null
+          id?: string
+          last_synced_at?: string | null
+          name?: string | null
+          requisition_id: string
+          user_id: string
+        }
+        Update: {
+          balance?: number | null
+          created_at?: string
+          currency?: string | null
+          gc_account_id?: string
+          iban?: string | null
+          id?: string
+          last_synced_at?: string | null
+          name?: string | null
+          requisition_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_accounts_requisition_id_fkey"
+            columns: ["requisition_id"]
+            isOneToOne: false
+            referencedRelation: "bank_requisitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bank_requisitions: {
+        Row: {
+          created_at: string
+          id: string
+          institution_id: string
+          institution_name: string | null
+          link: string | null
+          reference: string
+          requisition_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          institution_id: string
+          institution_name?: string | null
+          link?: string | null
+          reference: string
+          requisition_id: string
+          status?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          institution_id?: string
+          institution_name?: string | null
+          link?: string | null
+          reference?: string
+          requisition_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      bank_transactions: {
+        Row: {
+          account_id: string
+          amount: number
+          booking_date: string | null
+          counterparty: string | null
+          created_at: string
+          currency: string | null
+          description: string | null
+          gc_transaction_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          booking_date?: string | null
+          counterparty?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          gc_transaction_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          booking_date?: string | null
+          counterparty?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          gc_transaction_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

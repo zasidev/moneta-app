@@ -28,3 +28,7 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+- GoCardless Bank Account Data calls live only in `src/lib/gocardless.server.ts` and are invoked from authenticated server functions in `src/lib/banking.functions.ts`; why: the secret id/key must never reach the browser and each user's data stays under RLS.
+- Bank sync is user-triggered (button + automatic run on return from the bank with `?ref=`), upserting by provider ids; why: idempotent re-syncs without duplicate transactions.

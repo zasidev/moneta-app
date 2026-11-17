@@ -153,3 +153,28 @@
     color: var(--color-foreground);
   }
 }
+
+/* Conto Chiaro theme: warm paper + deep bottle green */
+@theme inline {
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+}
+:root {
+  --background: oklch(0.975 0.012 85);
+  --foreground: oklch(0.22 0.02 160);
+  --card: oklch(0.99 0.008 85);
+  --card-foreground: oklch(0.22 0.02 160);
+  --popover: oklch(0.99 0.008 85);
+  --popover-foreground: oklch(0.22 0.02 160);
+  --primary: oklch(0.42 0.09 160);
+  --primary-foreground: oklch(0.98 0.01 85);
+  --muted: oklch(0.93 0.015 85);
+  --muted-foreground: oklch(0.48 0.02 160);
+  --accent: oklch(0.92 0.03 150);
+  --accent-foreground: oklch(0.22 0.02 160);
+  --destructive: oklch(0.52 0.18 30);
+  --border: oklch(0.88 0.015 85);
+  --input: oklch(0.88 0.015 85);
+  --ring: oklch(0.42 0.09 160);
+}
+body { font-family: var(--font-sans); }
