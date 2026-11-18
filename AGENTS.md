@@ -34,3 +34,4 @@ use the editor.
 - Bank sync is user-triggered (button + automatic run on return from the bank with `?ref=`), upserting by provider ids; why: idempotent re-syncs without duplicate transactions.
 - Dashboard display preferences live in a browser-only hook and financial formatting is centralized; why: persistent theme/privacy settings must not expose amounts through charts or secondary views.
 - Dashboard charts use synchronized transactions, grouped by month and account, without invented categories; why: the bank schema does not provide category assignments.
+- Database custom (investimenti): per tabelle non gestite da Lovable (es. `investment_holdings`, `investment_prices`) Kilo può creare migration SQL in `supabase/migrations/` su richiesta dell'utente; per le tabelle bancarie esistenti (`bank_accounts`, `bank_transactions`, `bank_requisitions`) resta valida la regola di interagire tramite Lovable.
