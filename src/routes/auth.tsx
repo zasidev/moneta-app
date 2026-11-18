@@ -14,6 +14,8 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "Accedi a Conto Chiaro per gestire le tue spese personali." },
       { property: "og:title", content: "Accedi — Conto Chiaro" },
       { property: "og:description", content: "Accedi a Conto Chiaro per gestire le tue spese personali." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AuthPage,

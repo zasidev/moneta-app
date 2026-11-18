@@ -8,6 +8,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Collega i tuoi conti bancari via open banking e tieni traccia delle spese personali." },
       { property: "og:title", content: "Conto Chiaro — Le tue spese, in chiaro" },
       { property: "og:description", content: "Collega i tuoi conti bancari via open banking e tieni traccia delle spese personali." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Index,

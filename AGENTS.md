@@ -32,3 +32,5 @@ use the editor.
 ## Project rules
 - GoCardless Bank Account Data calls live only in `src/lib/gocardless.server.ts` and are invoked from authenticated server functions in `src/lib/banking.functions.ts`; why: the secret id/key must never reach the browser and each user's data stays under RLS.
 - Bank sync is user-triggered (button + automatic run on return from the bank with `?ref=`), upserting by provider ids; why: idempotent re-syncs without duplicate transactions.
+- Dashboard display preferences live in a browser-only hook and financial formatting is centralized; why: persistent theme/privacy settings must not expose amounts through charts or secondary views.
+- Dashboard charts use synchronized transactions, grouped by month and account, without invented categories; why: the bank schema does not provide category assignments.
