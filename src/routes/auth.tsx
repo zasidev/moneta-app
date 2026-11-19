@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (s: Record<string, unknown>): { code?: string; error?: string } => ({
+  validateSearch: (s: Record<string, unknown>): { code?: string | undefined; error?: string | undefined } => ({
     code: typeof s["code"] === "string" ? s["code"] : undefined,
     error: typeof s["error"] === "string" ? s["error"] : undefined,
   }),
@@ -48,7 +48,7 @@ function AuthPage() {
   useEffect(() => {
     async function handleCallback() {
       if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession({ code });
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
           toast.error(error.message);
           navigate({ to: "/auth", search: {}, replace: true });

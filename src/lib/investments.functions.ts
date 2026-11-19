@@ -1,31 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-
-type Holding = {
-  id?: string;
-  user_id: string;
-  ticker: string;
-  name?: string | null;
-  currency: string;
-  quantity: number;
-  purchase_price?: number | null;
-  purchase_date?: string | null;
-  platform?: string | null;
-  created_at?: string;
-  updated_at?: string;
-};
-
-type Price = {
-  ticker: string;
-  price: number;
-  currency: string;
-  fetched_at: string;
-};
+import { investmentClient, type HoldingInput, type Price } from "@/lib/investment-types";
 
 export const listHoldings = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
+    const { data, error } = await investmentClient(context.supabase)
       .from("investment_holdings")
       .select("*")
       .order("created_at", { ascending: false });
@@ -35,10 +15,10 @@ export const listHoldings = createServerFn({ method: "GET" })
 
 export const upsertHolding = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => d as Holding)
+  .inputValidator((d: HoldingInput) => d)
   .handler(async ({ data, context }) => {
-    const d = data as Holding;
-    const { data: saved, error } = await context.supabase
+    const d = data;
+    const { data: saved, error } = await investmentClient(context.supabase)
       .from("investment_holdings")
       .upsert({ ...d, user_id: context.userId, updated_at: new Date().toISOString() })
       .select()
@@ -55,7 +35,7 @@ export const deleteHolding = createServerFn({ method: "POST" })
     return { id: dd.id };
   })
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
+    const { error } = await investmentClient(context.supabase)
       .from("investment_holdings")
       .delete()
       .eq("id", data.id)
@@ -67,7 +47,7 @@ export const deleteHolding = createServerFn({ method: "POST" })
 export const fetchPrices = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: holdings } = await context.supabase
+    const { data: holdings } = await investmentClient(context.supabase)
       .from("investment_holdings")
       .select("ticker, currency");
     if (!holdings?.length) return { updated: 0 };
@@ -78,7 +58,7 @@ export const fetchPrices = createServerFn({ method: "POST" })
       if (p) results.push(p);
     }
     for (const p of results) {
-      await context.supabase.from("investment_prices").upsert(
+      await investmentClient(context.supabase).from("investment_prices").upsert(
         {
           ticker: p.ticker,
           price: p.price,
@@ -99,8 +79,10 @@ async function fetchQuote(ticker: string): Promise<Price | null> {
   const text = await res.text();
   const lines = text.trim().split("\n");
   if (lines.length < 2) return null;
-  const header = lines[0].split(",");
-  const row = lines[1].split(",");
+  const [headerLine, dataLine] = lines;
+  if (!headerLine || !dataLine) return null;
+  const header = headerLine.split(",");
+  const row = dataLine.split(",");
   const get = (key: string) => row[header.indexOf(key)] ?? "";
   const close = Number(get("close"));
   if (!close) return null;

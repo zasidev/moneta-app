@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Eye, EyeOff, LogOut, Plus, RefreshCw, Trash2, Wallet } from "lucide-react";
@@ -11,6 +11,8 @@ import {
 } from "@/lib/investments.functions";
 import { financialValue } from "@/lib/dashboard-preferences";
 import { useDashboardPreferences } from "@/hooks/use-dashboard-preferences";
+import { AppNavigation } from "@/components/app-navigation";
+import { investmentClient } from "@/lib/investment-types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -37,6 +39,10 @@ export const Route = createFileRoute("/_authenticated/investments")({
     meta: [
       { title: "Investimenti — Conto Chiaro" },
       { name: "description", content: "Il tuo portafoglio titoli e valore attuale." },
+      { property: "og:title", content: "Investimenti — Conto Chiaro" },
+      { property: "og:description", content: "Il tuo portafoglio titoli e valore attuale." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Investments,
@@ -63,7 +69,7 @@ function Investments() {
   const prices = useQuery({
     queryKey: ["investment_prices"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("investment_prices").select("*");
+      const { data, error } = await investmentClient(supabase).from("investment_prices").select("*");
       if (error) throw error;
       return data ?? [];
     },
@@ -75,13 +81,12 @@ function Investments() {
   });
 
   async function add() {
-    const res = await form.handleSubmit(async (d) => {
+    await form.handleSubmit(async (d) => {
       await upsertHolding({ data: d });
       form.reset();
       setOpen(false);
       await qc.invalidateQueries();
     })();
-    if (!res) return;
   }
 
   async function remove(id: string) {
@@ -120,59 +125,21 @@ function Investments() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="dashboard-shell">
-        <aside className="dashboard-sidebar bg-sidebar text-sidebar-foreground">
-          <div className="flex items-center gap-3 px-5 py-8">
-            <span className="brand-symbol">
-              <Wallet size={23} />
-            </span>
-            <span className="text-xl font-semibold">Conto Chiaro</span>
-          </div>
-          <nav aria-label="Menu principale" className="flex gap-1 px-3 lg:flex-col lg:gap-2">
-            <Button
-              variant="ghost"
-              aria-current="page"
-              className="nav-item h-11 justify-start gap-3 px-4 bg-sidebar-accent text-sidebar-accent-foreground"
-            >
-              <span className="flex items-center gap-3">
-                <Plus className="size-4" />
-                Investimenti
-              </span>
-            </Button>
-            <Button variant="ghost" className="nav-item h-11 justify-start gap-3 px-4" asChild>
-              <Link to="/_authenticated/dashboard">
-                <Wallet />
-                Conti
-              </Link>
-            </Button>
-          </nav>
-          <div className="mt-auto border-t border-sidebar-border px-3 py-5 lg:block">
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-3"
-              onClick={() =>
-                supabase.auth.signOut().then(() => {
-                  qc.clear();
-                })
-              }
-            >
-              <LogOut size={18} />
-              Esci
-            </Button>
-          </div>
-        </aside>
+        <AppNavigation current="Investimenti" />
         <div className="dashboard-main min-w-0">
-          <header className="flex flex-wrap items-center justify-between gap-4 pb-6">
-            <div>
-              <h1 className="text-3xl font-semibold">Investimenti</h1>
+          <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 pb-6">
+            <div className="min-w-0">
+              <h1 className="truncate text-2xl font-semibold sm:text-3xl">Investimenti</h1>
               <p className="mt-1 text-sm text-muted-foreground">
                 Portafoglio titoli · Conto Chiaro
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               <Button
                 variant="outline"
                 size="icon"
                 title="Aggiorna prezzi di mercato"
+                aria-label="Aggiorna prezzi di mercato"
                 onClick={syncPrices}
                 disabled={syncing}
               >
@@ -191,7 +158,7 @@ function Investments() {
             </div>
           </header>
 
-          <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-4 mb-5">
+          <div className="stats-grid mb-5 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
             <div className="stat-tile">
               <div className="min-w-0">
                 <p className="text-sm font-medium">Valore attuale</p>
@@ -223,7 +190,7 @@ function Investments() {
           </div>
 
           <section className="dashboard-panel mb-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
               <h2>I tuoi titoli</h2>
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
@@ -232,7 +199,7 @@ function Investments() {
                     Aggiungi titolo
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-h-[85dvh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Nuovo titolo</DialogTitle>
                   </DialogHeader>
@@ -244,7 +211,7 @@ function Investments() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Ticker / ISIN</FormLabel>
-                            <FormControl {...field} placeholder="es. AAPL" />
+                            <FormControl><Input {...field} placeholder="es. AAPL" /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -255,7 +222,7 @@ function Investments() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Nome</FormLabel>
-                            <FormControl {...field} placeholder="Apple Inc." />
+                            <FormControl><Input {...field} placeholder="Apple Inc." /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -267,7 +234,7 @@ function Investments() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Valuta</FormLabel>
-                              <FormControl {...field} placeholder="EUR" />
+                              <FormControl><Input {...field} placeholder="EUR" /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -275,11 +242,10 @@ function Investments() {
                         <FormField
                           control={form.control}
                           name="quantity"
-                          type="number"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Quantità</FormLabel>
-                              <FormControl {...field} />
+                              <FormControl><Input {...field} type="number" step="any" /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -289,11 +255,10 @@ function Investments() {
                         <FormField
                           control={form.control}
                           name="purchase_price"
-                          type="number"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Prezzo d'acquisto</FormLabel>
-                              <FormControl {...field} placeholder="0" />
+                              <FormControl><Input {...field} value={field.value ?? ""} type="number" step="any" placeholder="0" /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -301,11 +266,10 @@ function Investments() {
                         <FormField
                           control={form.control}
                           name="purchase_date"
-                          type="date"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Data acquisto</FormLabel>
-                              <FormControl {...field} />
+                              <FormControl><Input {...field} type="date" /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -317,7 +281,7 @@ function Investments() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Piattaforma / conto</FormLabel>
-                            <FormControl {...field} placeholder="es. broker" />
+                            <FormControl><Input {...field} placeholder="es. broker" /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -330,7 +294,7 @@ function Investments() {
             </div>
             <ul className="mt-4 divide-y divide-border">
               {rows.map((h) => (
-                <li key={h.id} className="flex items-center gap-3 py-4">
+                <li key={h.id} className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-center gap-2 py-4">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold">{h.name ?? h.ticker}</p>
                     <p className="mt-0.5 truncate text-xs text-muted-foreground">
@@ -353,7 +317,7 @@ function Investments() {
                       {money(h.gain, h.cur)}
                     </p>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => remove(String(h.id))}>
+                  <Button variant="outline" size="sm" aria-label="Rimuovi titolo" onClick={() => { if (h.id) remove(h.id); }}>
                     <Trash2 className="size-4" />
                   </Button>
                 </li>

@@ -37,6 +37,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { listInstitutions, startBankConnection, syncBankData } from "@/lib/banking.functions";
 import { financialValue } from "@/lib/dashboard-preferences";
 import { useDashboardPreferences } from "@/hooks/use-dashboard-preferences";
+import { AppNavigation } from "@/components/app-navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -48,8 +49,10 @@ import {
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  validateSearch: (s: Record<string, unknown>): { ref?: string } =>
-    typeof s["ref"] === "string" ? { ref: s["ref"] } : {},
+  validateSearch: (s: Record<string, unknown>): { ref?: string | undefined; view?: string | undefined } => ({
+    ref: typeof s["ref"] === "string" ? s["ref"] : undefined,
+    view: typeof s["view"] === "string" && ["Panoramica", "Transazioni", "Conti", "Analisi"].includes(s["view"]) ? s["view"] : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Panoramica — Conto Chiaro" },
@@ -77,21 +80,14 @@ const chartColors = [
   "var(--chart-4)",
   "var(--chart-5)",
 ];
-const navItems = [
-  { name: "Panoramica", icon: House },
-  { name: "Transazioni", icon: CreditCard },
-  { name: "Conti", icon: Building2 },
-  { name: "Analisi", icon: ChartNoAxesCombined },
-  { name: "Investimenti", icon: Plus },
-] as const;
-
 function Dashboard() {
-  const { ref } = Route.useSearch();
+  const { ref, view: requestedView } = Route.useSearch();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [syncing, setSyncing] = useState(false);
   const handledRef = useRef(false);
-  const [view, setView] = useState<string>("Panoramica");
+  const [view, setView] = useState<string>(requestedView ?? "Panoramica");
+  useEffect(() => { setView(requestedView ?? "Panoramica"); }, [requestedView]);
   const [month, setMonth] = useState(monthKey(new Date()));
   const [search, setSearch] = useState("");
   const [currency, setCurrency] = useState("EUR");
@@ -202,54 +198,15 @@ function Dashboard() {
 
   return (
     <main className="dashboard-shell min-h-screen bg-background text-foreground">
-      <aside className="dashboard-sidebar bg-sidebar text-sidebar-foreground">
-        <div className="flex items-center gap-3 px-5 py-8">
-          <span className="brand-symbol">
-            <Wallet size={23} />
-          </span>
-          <span className="text-xl font-semibold">Conto Chiaro</span>
-        </div>
-        <nav aria-label="Menu principale" className="flex gap-1 px-3 lg:flex-col lg:gap-2">
-          {navItems.map(({ name, icon: Icon }) => {
-            const isInvestments = name === "Investimenti";
-            return (
-              <Button
-                key={name}
-                variant="ghost"
-                aria-current={!isInvestments && view === name ? "page" : undefined}
-                onClick={
-                  isInvestments
-                    ? () => navigate({ to: "/_authenticated/investments" })
-                    : () => setView(name)
-                }
-                className={`nav-item h-11 justify-start gap-3 px-4 ${!isInvestments && view === name ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""}`}
-              >
-                <Icon />
-                <span>{name}</span>
-              </Button>
-            );
-          })}
-        </nav>
-        <div className="mt-auto hidden border-t border-sidebar-border px-3 py-5 lg:block">
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-3"
-            onClick={() =>
-              supabase.auth.signOut().then(() => {
-                qc.clear();
-                navigate({ to: "/auth" });
-              })
-            }
-          >
-            <LogOut />
-            Esci
-          </Button>
-        </div>
-      </aside>
+      <AppNavigation current={view} onViewChange={(name) => {
+        setView(name);
+        navigate({ to: "/dashboard", search: { view: name }, replace: true });
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }} />
       <div className="dashboard-main min-w-0">
-        <header className="flex flex-wrap items-center justify-between gap-4 pb-6">
+        <header className="dashboard-header grid min-w-0 gap-4 pb-6 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-semibold">{view}</h1>
+            <h1 className="truncate text-2xl font-semibold sm:text-3xl">{view}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {new Date(`${month}-01T12:00:00`).toLocaleDateString("it-IT", {
                 month: "long",
@@ -258,13 +215,13 @@ function Dashboard() {
               · Conto Chiaro
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="dashboard-toolbar">
             <select
               aria-label="Valuta dei grafici"
               title="Valuta dei grafici"
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
-              className="h-10 rounded-md border border-input bg-card px-2 text-sm text-foreground"
+              className="currency-control h-11 min-w-0 rounded-md border border-input bg-card px-2 text-sm text-foreground"
             >
               {Array.from(
                 new Set([
@@ -278,7 +235,7 @@ function Dashboard() {
                 </option>
               ))}
             </select>
-            <label className="flex h-10 items-center gap-2 rounded-md border border-input bg-card px-3">
+            <label className="month-control flex h-11 min-w-0 items-center gap-2 rounded-md border border-input bg-card px-3">
               <CalendarDays size={17} className="text-primary" />
               <input
                 aria-label="Mese"
@@ -287,7 +244,7 @@ function Dashboard() {
                 onChange={(e) => {
                   if (e.target.value) setMonth(e.target.value);
                 }}
-                className="w-32 bg-transparent text-sm outline-none"
+                className="w-full min-w-0 bg-transparent text-sm outline-none sm:w-32"
               />
             </label>
             <Button
@@ -333,7 +290,7 @@ function Dashboard() {
         )}
         {(view === "Panoramica" || view === "Analisi") && (
           <>
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="stats-grid grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
               <div className="stat-tile">
                 <span className="stat-icon">
                   <Wallet />
@@ -356,7 +313,7 @@ function Dashboard() {
                 <span className="stat-icon">
                   <ArrowDownLeft />
                 </span>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm font-medium">Entrate</p>
                   <p className="stat-value">
                     {loading ? "…" : mixedCurrency ? "Valute diverse" : money(income, currency)}
@@ -368,7 +325,7 @@ function Dashboard() {
                 <span className="stat-icon expense-icon">
                   <ArrowUpRight />
                 </span>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm font-medium">Uscite</p>
                   <p className="stat-value">
                     {loading ? "…" : mixedCurrency ? "Valute diverse" : money(spending, currency)}
@@ -380,7 +337,7 @@ function Dashboard() {
                 <span className="stat-icon">
                   <Percent />
                 </span>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm font-medium">Tasso di risparmio</p>
                   <p className="stat-value">
                     {hidden || !ready
@@ -395,7 +352,7 @@ function Dashboard() {
             </div>
             <div className="dashboard-grid mt-5">
               <section className="dashboard-panel">
-                <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="grid min-w-0 gap-3 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
                   <h2>Andamento entrate e uscite</h2>
                   <div className="flex gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-2">
@@ -541,7 +498,7 @@ function Dashboard() {
         <div className={`${view === "Panoramica" ? "dashboard-grid" : "grid"} mt-5 gap-5`}>
           {(view === "Panoramica" || view === "Transazioni") && (
             <section className="dashboard-panel">
-              <div className="flex items-center justify-between gap-2">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
                 <h2>{view === "Transazioni" ? "Transazioni" : "Ultime transazioni"}</h2>
                 {view === "Panoramica" && (
                   <Button
@@ -564,7 +521,7 @@ function Dashboard() {
               )}
               <ul className="mt-4 divide-y divide-border">
                 {(view === "Panoramica" ? shownRows.slice(0, 5) : shownRows).map((t) => (
-                  <li key={t.id} className="flex items-center gap-3 py-3">
+                  <li key={t.id} className="financial-row grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-3">
                     <span className={`transaction-icon ${t.amount > 0 ? "income-icon" : ""}`}>
                       {t.amount > 0 ? <ArrowDownLeft size={19} /> : <CreditCard size={19} />}
                     </span>
@@ -596,7 +553,7 @@ function Dashboard() {
           )}
           {(view === "Panoramica" || view === "Conti") && (
             <section className="dashboard-panel">
-              <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
                 <h2>I tuoi conti</h2>
                 {view === "Panoramica" ? (
                   <Button
@@ -612,7 +569,7 @@ function Dashboard() {
               </div>
               <ul className="mt-4 divide-y divide-border">
                 {(accounts.data ?? []).map((a) => (
-                  <li key={a.id} className="flex items-center gap-3 py-4">
+                  <li key={a.id} className="financial-row grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-4">
                     <span className="transaction-icon">
                       <Building2 size={21} />
                     </span>
@@ -665,7 +622,7 @@ function Dashboard() {
           <Button
             variant="ghost"
             size="sm"
-            className="lg:hidden"
+            className=""
             onClick={() =>
               supabase.auth.signOut().then(() => {
                 qc.clear();
@@ -721,7 +678,7 @@ function ConnectBankDialog() {
           Collega banca
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[85dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Scegli la tua banca</DialogTitle>
         </DialogHeader>
