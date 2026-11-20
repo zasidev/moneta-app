@@ -7,3 +7,9 @@
 - [x] Adattare card, controlli e liste agli schermi piccoli.
 - [x] Trasformare il menu in una barra flottante inferiore solo su mobile.
 - [x] Verificare navigazione e layout su telefono e desktop.
+
+# Transazioni e deposito
+- [ ] Completare e verificare gli arrotondamenti.
+- [ ] Escludere e reincludere movimenti nelle statistiche, anche con swipe mobile.
+- [ ] Inserire conti deposito con tasso fisso e valore maturato giornalmente.
+- [ ] Verificare salvataggio, calcoli e utilizzo da telefono.

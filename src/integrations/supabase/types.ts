@@ -144,6 +144,68 @@ export type Database = {
           },
         ]
       }
+      deposit_accounts: {
+        Row: {
+          annual_rate: number
+          created_at: string
+          currency: string
+          end_date: string | null
+          id: string
+          name: string
+          principal: number
+          start_date: string
+          user_id: string
+        }
+        Insert: {
+          annual_rate: number
+          created_at?: string
+          currency?: string
+          end_date?: string | null
+          id?: string
+          name: string
+          principal: number
+          start_date: string
+          user_id: string
+        }
+        Update: {
+          annual_rate?: number
+          created_at?: string
+          currency?: string
+          end_date?: string | null
+          id?: string
+          name?: string
+          principal?: number
+          start_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transaction_exclusions: {
+        Row: {
+          created_at: string
+          transaction_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          transaction_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          transaction_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_exclusions_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: true
+            referencedRelation: "bank_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -8,6 +8,13 @@
       "when": 1794941321894,
       "tag": "0000_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795169288403,
+      "tag": "0001_transaction_exclusions_and_deposits",
+      "breakpoints": true
     }
   ]
 }
