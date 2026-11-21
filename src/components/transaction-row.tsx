@@ -38,7 +38,7 @@ export function TransactionRow({ transaction: t, excluded, pending, money, onTog
           {excluded && <span className="text-xs font-medium text-primary">Esclusa dalle statistiche</span>}
         </div>
         <span className={`transaction-amount text-right text-sm font-semibold ${excluded ? "text-muted-foreground line-through" : t.amount < 0 ? "text-destructive" : "text-success"}`}>{money(Number(t.amount), t.currency ?? "EUR")}</span>
-        <Button size="icon" variant="ghost" className="size-8 rounded-full" aria-label={action} title={action} aria-pressed={excluded} disabled={pending} onClick={onToggle}>
+        <Button size="icon" variant="ghost" className="size-8 rounded-full hidden md:block" aria-label={action} title={action} aria-pressed={excluded} disabled={pending} onClick={onToggle}>
           {excluded ? <RotateCcw size={16} /> : <MinusCircle size={16} />}
         </Button>
       </div>
