@@ -14,11 +14,9 @@ import {
   EyeOff,
   House,
   LogOut,
-  Moon,
   Percent,
   Plus,
   RefreshCw,
-  Sun,
   Wallet,
 } from "lucide-react";
 import {
@@ -38,6 +36,7 @@ import { listInstitutions, startBankConnection, syncBankData } from "@/lib/banki
 import { financialValue } from "@/lib/dashboard-preferences";
 import { useDashboardPreferences } from "@/hooks/use-dashboard-preferences";
 import { AppNavigation } from "@/components/app-navigation";
+import { AppTopbar } from "@/components/app-topbar";
 import { TransactionRow } from "@/components/transaction-row";
 import { includedTransactions, transactionTotals } from "@/lib/financial-statistics";
 import { Button } from "@/components/ui/button";
@@ -232,6 +231,7 @@ function Dashboard() {
         window.scrollTo({ top: 0, behavior: "instant" });
       }} />
       <div className="dashboard-main min-w-0">
+        <AppTopbar theme={theme} setTheme={setTheme} ready={ready} />
         <header className="dashboard-header grid min-w-0 gap-4 pb-6 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
           <div>
             <h1 className="truncate text-2xl font-semibold sm:text-3xl">{view}</h1>
@@ -284,15 +284,6 @@ function Dashboard() {
               onClick={() => setHidden(!hidden)}
             >
               {hidden ? <EyeOff /> : <Eye />}
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              title={theme === "dark" ? "Tema chiaro" : "Tema scuro"}
-              aria-label={theme === "dark" ? "Tema chiaro" : "Tema scuro"}
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            >
-              {theme === "dark" ? <Sun /> : <Moon />}
             </Button>
             <Button
               size="icon"

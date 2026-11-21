@@ -30,6 +30,7 @@ use the editor.
 <!-- LOVABLE:END -->
 
 ## Project rules
+- Authenticated views share AppTopbar with theme state passed from each view; why: a single preference owner avoids competing theme writes while providing consistent account controls.
 - Transaction exclusions use a separate owner-scoped table and shared statistics filtering; why: provider sync must not overwrite exclusions or remove the original movement.
 - Deposit CRUD uses authenticated server functions and a browser-safe date-based calculator; why: ownership is enforced and daily accrued value needs no scheduled writes.
 - Authenticated pages share AppNavigation with a mobile-only fixed bottom layout below 768px; why: consistent destinations and safe-area clearance across financial views.

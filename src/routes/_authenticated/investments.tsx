@@ -12,6 +12,7 @@ import {
 import { financialValue } from "@/lib/dashboard-preferences";
 import { useDashboardPreferences } from "@/hooks/use-dashboard-preferences";
 import { AppNavigation } from "@/components/app-navigation";
+import { AppTopbar } from "@/components/app-topbar";
 import { DepositAccounts } from "@/components/deposit-accounts";
 import { investmentClient } from "@/lib/investment-types";
 import { Button } from "@/components/ui/button";
@@ -60,7 +61,7 @@ const holdingSchema = z.object({
 });
 
 function Investments() {
-  const { hidden, setHidden, ready } = useDashboardPreferences();
+  const { hidden, setHidden, theme, setTheme, ready } = useDashboardPreferences();
   const money = (n: number, c = "EUR") => financialValue(n, c, hidden || !ready);
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -128,6 +129,7 @@ function Investments() {
       <div className="dashboard-shell">
         <AppNavigation current="Investimenti" />
         <div className="dashboard-main min-w-0">
+          <AppTopbar theme={theme} setTheme={setTheme} ready={ready} />
           <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 pb-6">
             <div className="min-w-0">
               <h1 className="truncate text-2xl font-semibold sm:text-3xl">Investimenti</h1>

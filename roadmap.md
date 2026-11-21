@@ -13,3 +13,7 @@
 - [x] Escludere e reincludere movimenti nelle statistiche, anche con swipe mobile.
 - [x] Inserire conti deposito con tasso fisso e valore maturato giornalmente.
 - [x] Verificare salvataggio, calcoli e utilizzo da telefono.
+
+# Barra superiore
+- [ ] Aggiungere avatar utente e cambio tema su dashboard e investimenti.
+- [ ] Verificare tema persistente e disposizione su telefono e desktop.

@@ -243,6 +243,7 @@ html.dark { color-scheme: dark; }
 .dashboard-sidebar { position: sticky; top: 0; height: 100dvh; display: flex; flex-direction: column; }
 .brand-symbol { display: grid; place-items: center; width: 36px; height: 36px; border-radius: var(--radius-icon); background: var(--sidebar-accent); color: var(--sidebar-foreground); }
 .dashboard-main { padding: 28px; max-width: 1600px; width: 100%; margin-inline: auto; }
+.app-topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 72px; margin: -28px -28px 28px; padding: 12px 28px; border-bottom: 1px solid var(--border); background: var(--card); }
 .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; }
 .dashboard-panel, .stat-tile { border: 1px solid var(--border); background: var(--card); border-radius: var(--radius-panel); box-shadow: var(--panel-shadow); }
 .dashboard-panel { min-width: 0; padding: 20px; }
@@ -274,9 +275,11 @@ html.dark { color-scheme: dark; }
   .dashboard-sidebar > div:first-child { padding-block: 18px; }
   .nav-item { flex: 1; justify-content: center; }
   .dashboard-main { padding: 24px; }
+  .app-topbar { margin: -24px -24px 24px; padding-inline: 24px; }
 }
 @media (max-width: 767px) {
   .dashboard-main { padding: 22px 16px calc(110px + env(safe-area-inset-bottom, 0px)); }
+  .app-topbar { min-height: 64px; margin: -22px -16px 22px; padding: 12px 16px; }
   .dashboard-sidebar { position: fixed; inset: auto 12px calc(12px + env(safe-area-inset-bottom, 0px)); height: 68px; z-index: 40; padding: 0; border: 1px solid var(--sidebar-border); border-radius: var(--radius-pill); box-shadow: var(--navigation-shadow); }
   .dashboard-sidebar > div { display: none; }
   .app-navigation { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; height: 100%; padding: 6px; }
@@ -284,7 +287,7 @@ html.dark { color-scheme: dark; }
   .nav-item svg { width: 21px; height: 21px; }
   .nav-label-desktop { display: none; }
   .nav-label-mobile { display: block; max-width: 100%; }
-  .dashboard-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) repeat(3, 44px); gap: 8px; }
+  .dashboard-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) repeat(2, 44px); gap: 8px; }
   .month-control { grid-column: 1 / -1; grid-row: 1; }
   .dashboard-panel { padding: 16px; }
   .dashboard-panel h2 { font-size: 16px; min-width: 0; }
@@ -301,6 +304,7 @@ html.dark { color-scheme: dark; }
 }
 @media (max-width: 359px) {
   .dashboard-main { padding-inline: 12px; }
+  .app-topbar { margin-inline: -12px; padding-inline: 12px; }
   .dashboard-panel { padding: 12px; }
   .stat-tile { padding: 12px; }
   .stat-value { font-size: 18px; }
