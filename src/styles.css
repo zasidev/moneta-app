@@ -262,6 +262,10 @@ html.dark { color-scheme: dark; }
 .dashboard-toolbar { display: flex; align-items: center; gap: 8px; }
 .dashboard-toolbar > button { width: 44px; height: 44px; flex-shrink: 0; border-radius: var(--radius-pill); }
 .currency-control, .month-control { border-radius: var(--radius-pill); }
+.transaction-surface { touch-action: pan-y; transition: transform 160ms ease; }
+.transaction-surface.swipe-left { transform: translateX(-64px); }
+.transaction-surface.swipe-right { transform: translateX(64px); }
+.transaction-amount { max-width: 130px; overflow-wrap: anywhere; }
 @media (min-width: 1024px) { .app-navigation { flex-direction: column; gap: 8px; } }
 @media (max-width: 1100px) { .dashboard-grid { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 1023px) {

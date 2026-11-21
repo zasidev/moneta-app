@@ -38,6 +38,8 @@ import { listInstitutions, startBankConnection, syncBankData } from "@/lib/banki
 import { financialValue } from "@/lib/dashboard-preferences";
 import { useDashboardPreferences } from "@/hooks/use-dashboard-preferences";
 import { AppNavigation } from "@/components/app-navigation";
+import { TransactionRow } from "@/components/transaction-row";
+import { includedTransactions, transactionTotals } from "@/lib/financial-statistics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -93,6 +95,33 @@ function Dashboard() {
   const [currency, setCurrency] = useState("EUR");
   const { hidden, setHidden, theme, setTheme, ready } = useDashboardPreferences();
   const money = (n: number, c = "EUR") => financialValue(n, c, hidden || !ready);
+  const [pendingExclusion, setPendingExclusion] = useState<string | null>(null);
+  const exclusions = useQuery({
+    queryKey: ["transaction-exclusions"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("transaction_exclusions").select("transaction_id");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const excludedIds = useMemo(() => new Set((exclusions.data ?? []).map((row) => row.transaction_id)), [exclusions.data]);
+  async function toggleExclusion(id: string) {
+    if (pendingExclusion) return;
+    setPendingExclusion(id);
+    const excluded = excludedIds.has(id);
+    try {
+      const { data: auth, error: authError } = await supabase.auth.getUser();
+      if (authError || !auth.user) throw new Error("Accedi di nuovo per modificare il movimento");
+      const { error } = excluded
+        ? await supabase.from("transaction_exclusions").delete().eq("transaction_id", id)
+        : await supabase.from("transaction_exclusions").insert({ transaction_id: id, user_id: auth.user.id });
+      if (error) throw error;
+      await qc.invalidateQueries({ queryKey: ["transaction-exclusions"] });
+      toast.success(excluded ? "Movimento incluso nelle statistiche" : "Movimento escluso dalle statistiche");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Modifica non riuscita");
+    } finally { setPendingExclusion(null); }
+  }
 
   const accounts = useQuery({
     queryKey: ["accounts"],
@@ -151,9 +180,8 @@ function Dashboard() {
     () => (txs.data ?? []).filter((t) => t.booking_date?.startsWith(month)),
     [txs.data, month],
   );
-  const rows = monthRows.filter((t) => (t.currency ?? "EUR") === currency);
-  const income = rows.reduce((sum, t) => sum + Math.max(0, Number(t.amount)), 0);
-  const spending = rows.reduce((sum, t) => sum + Math.max(0, -Number(t.amount)), 0);
+  const rows = includedTransactions(monthRows, excludedIds).filter((t) => (t.currency ?? "EUR") === currency);
+  const { income, spending } = transactionTotals(rows);
   const balances = useMemo(
     () =>
       Object.entries(
@@ -171,7 +199,7 @@ function Dashboard() {
       Array.from({ length: 6 }, (_, i) => {
         const [y = new Date().getFullYear(), m = 1] = month.split("-").map(Number);
         const date = new Date(y, m - 6 + i, 1);
-        const list = (txs.data ?? []).filter(
+        const list = includedTransactions(txs.data ?? [], excludedIds).filter(
           (t) => t.booking_date?.startsWith(monthKey(date)) && (t.currency ?? "EUR") === currency,
         );
         return {
@@ -180,7 +208,7 @@ function Dashboard() {
           Uscite: list.reduce((s, t) => s + Math.max(0, -Number(t.amount)), 0),
         };
       }),
-    [month, txs.data, currency],
+    [month, txs.data, currency, excludedIds],
   );
   const breakdown = (accounts.data ?? [])
     .map((a) => ({
@@ -190,8 +218,8 @@ function Dashboard() {
         .reduce((s, t) => s - Number(t.amount), 0),
     }))
     .filter((a) => a.value > 0);
-  const loading = accounts.isLoading || txs.isLoading;
-  const error = accounts.error || txs.error || reqs.error;
+  const loading = accounts.isLoading || txs.isLoading || exclusions.isLoading;
+  const error = accounts.error || txs.error || reqs.error || exclusions.error;
   const shownRows = monthRows.filter((t) =>
     `${t.counterparty ?? ""} ${t.description ?? ""}`.toLowerCase().includes(search.toLowerCase()),
   );
@@ -521,27 +549,7 @@ function Dashboard() {
               )}
               <ul className="mt-4 divide-y divide-border">
                 {(view === "Panoramica" ? shownRows.slice(0, 5) : shownRows).map((t) => (
-                  <li key={t.id} className="financial-row grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-3">
-                    <span className={`transaction-icon ${t.amount > 0 ? "income-icon" : ""}`}>
-                      {t.amount > 0 ? <ArrowDownLeft size={19} /> : <CreditCard size={19} />}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold">
-                        {t.counterparty ?? t.description ?? "Movimento"}
-                      </p>
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                        {t.booking_date
-                          ? new Date(t.booking_date).toLocaleDateString("it-IT")
-                          : "Data non disponibile"}{" "}
-                        · {t.description ?? "Movimento bancario"}
-                      </p>
-                    </div>
-                    <span
-                      className={`shrink-0 text-sm font-semibold ${t.amount < 0 ? "text-destructive" : "text-success"}`}
-                    >
-                      {money(Number(t.amount), t.currency ?? "EUR")}
-                    </span>
-                  </li>
+                  <TransactionRow key={t.id} transaction={t} excluded={excludedIds.has(t.id)} pending={pendingExclusion !== null || exclusions.isLoading || !!exclusions.error} money={money} onToggle={() => toggleExclusion(t.id)} />
                 ))}
                 {!shownRows.length && (
                   <li className="py-10 text-center text-sm text-muted-foreground">

@@ -12,6 +12,7 @@ import {
 import { financialValue } from "@/lib/dashboard-preferences";
 import { useDashboardPreferences } from "@/hooks/use-dashboard-preferences";
 import { AppNavigation } from "@/components/app-navigation";
+import { DepositAccounts } from "@/components/deposit-accounts";
 import { investmentClient } from "@/lib/investment-types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -189,6 +190,7 @@ function Investments() {
             </div>
           </div>
 
+          <DepositAccounts money={money} hidden={hidden || !ready} />
           <section className="dashboard-panel mb-5">
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
               <h2>I tuoi titoli</h2>

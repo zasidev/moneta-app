@@ -30,6 +30,8 @@ use the editor.
 <!-- LOVABLE:END -->
 
 ## Project rules
+- Transaction exclusions use a separate owner-scoped table and shared statistics filtering; why: provider sync must not overwrite exclusions or remove the original movement.
+- Deposit CRUD uses authenticated server functions and a browser-safe date-based calculator; why: ownership is enforced and daily accrued value needs no scheduled writes.
 - Authenticated pages share AppNavigation with a mobile-only fixed bottom layout below 768px; why: consistent destinations and safe-area clearance across financial views.
 - Custom investment table types extend the generated schema in a separate typed client adapter without replacing the session; why: externally managed tables must compile while preserving per-user RLS.
 - GoCardless Bank Account Data calls live only in `src/lib/gocardless.server.ts` and are invoked from authenticated server functions in `src/lib/banking.functions.ts`; why: the secret id/key must never reach the browser and each user's data stays under RLS.

@@ -9,7 +9,7 @@
 - [x] Verificare navigazione e layout su telefono e desktop.
 
 # Transazioni e deposito
-- [ ] Completare e verificare gli arrotondamenti.
-- [ ] Escludere e reincludere movimenti nelle statistiche, anche con swipe mobile.
-- [ ] Inserire conti deposito con tasso fisso e valore maturato giornalmente.
-- [ ] Verificare salvataggio, calcoli e utilizzo da telefono.
+- [x] Completare e verificare gli arrotondamenti.
+- [x] Escludere e reincludere movimenti nelle statistiche, anche con swipe mobile.
+- [x] Inserire conti deposito con tasso fisso e valore maturato giornalmente.
+- [x] Verificare salvataggio, calcoli e utilizzo da telefono.
