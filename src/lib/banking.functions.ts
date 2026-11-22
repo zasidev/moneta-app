@@ -86,9 +86,20 @@ export const syncBankData = createServerFn({ method: "POST" })
 
     for (const r of reqs ?? []) {
       try {
-        const remote = await gc<{ status: string; accounts: string[] }>(`/requisitions/${r.requisition_id}/`, { token });
-        await supabase.from("bank_requisitions").update({ status: remote.status }).eq("id", r.id);
-        if (remote.status !== "LN") continue;
+        let remote: { status: string; accounts: string[] } | null = null;
+        let linked = false;
+        // GoCardless può impiegare qualche secondo a segnare la requisizione come "LN" dopo il redirect dalla banca
+        for (let attempt = 0; attempt < 3; attempt++) {
+          remote = await gc<{ status: string; accounts: string[] }>(`/requisitions/${r.requisition_id}/`, { token });
+          await supabase.from("bank_requisitions").update({ status: remote.status }).eq("id", r.id);
+          if (remote.status === "LN") { linked = true; break; }
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
+        if (!linked) {
+          errors.push(`${r.institution_name ?? r.institution_id}: conto non ancora collegato da GoCardless (stato ${remote?.status ?? "sconosciuto"}), riprova la sincronizzazione`);
+          continue;
+        }
+        if (!remote) continue;
 
         for (const accId of remote.accounts) {
           const [details, balances, txs] = await Promise.all([
