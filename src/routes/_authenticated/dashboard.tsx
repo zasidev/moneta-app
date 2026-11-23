@@ -641,10 +641,11 @@ function Dashboard() {
 function ConnectBankDialog() {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
+  const [country, setCountry] = useState("it");
   const [busy, setBusy] = useState<string | null>(null);
   const inst = useQuery({
-    queryKey: ["institutions"],
-    queryFn: () => listInstitutions(),
+    queryKey: ["institutions", country],
+    queryFn: () => listInstitutions({ data: { country } }),
     enabled: open,
     staleTime: 3600_000,
   });
@@ -687,6 +688,23 @@ function ConnectBankDialog() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
+        <select
+          aria-label="Paese"
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+          className="mt-3 h-10 rounded-md border border-input bg-input px-2 text-sm text-foreground outline-none"
+        >
+          <option value="it">Italia</option>
+          <option value="es">Spagna</option>
+          <option value="fr">Francia</option>
+          <option value="de">Germania</option>
+          <option value="pt">Portogallo</option>
+          <option value="nl">Paesi Bassi</option>
+          <option value="be">Belgio</option>
+          <option value="at">Austria</option>
+          <option value="ie">Irlanda</option>
+          <option value="gr">Grecia</option>
+        </select>
         <div className="max-h-80 overflow-y-auto">
           {inst.isLoading && <p className="p-3 text-sm text-muted-foreground">Caricamento…</p>}
           {inst.error && (

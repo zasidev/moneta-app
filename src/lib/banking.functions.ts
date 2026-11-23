@@ -6,8 +6,13 @@ type Institution = { id: string; name: string; logo: string };
 
 export const listInstitutions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
-    const list = await gc<Institution[]>("/institutions/?country=it");
+  .inputValidator((d: { country?: string }) => {
+    if (d?.country && !/^[A-Z]{2}$/.test(d.country)) throw new Error("Paese non valido");
+    return d;
+  })
+  .handler(async ({ data }) => {
+    const country = data?.country ?? "it";
+    const list = await gc<Institution[]>(`/institutions/?country=${country}`);
     const sandbox: Institution = {
       id: SANDBOX_INSTITUTION_ID,
       name: "Sandbox Finance (test)",
