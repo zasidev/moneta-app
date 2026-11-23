@@ -8,6 +8,9 @@ export const SANDBOX_INSTITUTION_ID = "SANDBOXFINANCE_SFIN0000";
 type CachedToken = { access: string; expiresAt: number };
 let cachedToken: CachedToken | null = null;
 const TOKEN_MARGIN_MS = 60_000; // rinnova 1 minuto prima della scadenza
+// Un retry-after superiore a questo valore è troppo lungo per una server function:
+// non si aspetta, si segnala subito l'errore (es. limite 4/day di GoCardless).
+const MAX_RETRY_DELAY_MS = 30_000;
 
 async function fetchAccessToken(): Promise<CachedToken> {
   const secret_id = process.env["GOCARDLESS_SECRET_ID"];
@@ -64,9 +67,18 @@ export async function gc<T>(
   // Retry con backoff esponenziale su rate limit (429) e errori server (5xx).
   if ((res.status === 429 || res.status >= 500) && attempt < MAX_ATTEMPTS) {
     const retryAfter = res.headers.get("retry-after");
-    const delay = retryAfter
-      ? parseInt(retryAfter, 10) * 1000
-      : Math.min(1000 * 2 ** attempt, 8000);
+    let delay: number;
+    if (retryAfter) {
+      const ra = parseInt(retryAfter, 10) * 1000;
+      if (ra > MAX_RETRY_DELAY_MS) {
+        // Limite troppo alto per una server function (es. 4/day): non si aspetta, si segnala subito.
+        console.error(`GoCardless ${path} [${res.status}]: ${body}`);
+        throw new Error(`GoCardless ${path} [${res.status}]: ${body}`);
+      }
+      delay = ra;
+    } else {
+      delay = Math.min(1000 * 2 ** attempt, 8000);
+    }
     await sleep(delay > 0 ? delay : 1000);
     // Se era un 429, il token potrebbe essere stato invalidato: svuota la cache e riprova.
     if (res.status === 429) cachedToken = null;

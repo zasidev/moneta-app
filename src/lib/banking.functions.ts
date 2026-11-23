@@ -13,13 +13,18 @@ export const listInstitutions = createServerFn({ method: "GET" })
       name: "Sandbox Finance (test)",
       logo: "https://cdn-logos.gocardless.com/ais/SANDBOXFINANCE_SFIN0000.png",
     };
-    return [sandbox, ...list.filter((i) => i.id !== SANDBOX_INSTITUTION_ID)].map((i) => ({ id: i.id, name: i.name, logo: i.logo }));
+    return [sandbox, ...list.filter((i) => i.id !== SANDBOX_INSTITUTION_ID)].map((i) => ({
+      id: i.id,
+      name: i.name,
+      logo: i.logo,
+    }));
   });
 
 export const startBankConnection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { institutionId: string; institutionName: string; redirectUrl: string }) => {
-    if (!d?.institutionId || !/^https?:\/\//.test(d.redirectUrl)) throw new Error("Dati non validi");
+    if (!d?.institutionId || !/^https?:\/\//.test(d.redirectUrl))
+      throw new Error("Dati non validi");
     return d;
   })
   .handler(async ({ data, context }) => {
@@ -90,24 +95,40 @@ export const syncBankData = createServerFn({ method: "POST" })
         let linked = false;
         // GoCardless può impiegare qualche secondo a segnare la requisizione come "LN" dopo il redirect dalla banca
         for (let attempt = 0; attempt < 3; attempt++) {
-          remote = await gc<{ status: string; accounts: string[] }>(`/requisitions/${r.requisition_id}/`, { token });
+          remote = await gc<{ status: string; accounts: string[] }>(
+            `/requisitions/${r.requisition_id}/`,
+            { token },
+          );
           await supabase.from("bank_requisitions").update({ status: remote.status }).eq("id", r.id);
-          if (remote.status === "LN") { linked = true; break; }
+          if (remote.status === "LN") {
+            linked = true;
+            break;
+          }
           await new Promise((resolve) => setTimeout(resolve, 2000));
         }
         if (!linked) {
-          errors.push(`${r.institution_name ?? r.institution_id}: conto non ancora collegato da GoCardless (stato ${remote?.status ?? "sconosciuto"}), riprova la sincronizzazione`);
+          errors.push(
+            `${r.institution_name ?? r.institution_id}: conto non ancora collegato da GoCardless (stato ${remote?.status ?? "sconosciuto"}), riprova la sincronizzazione`,
+          );
           continue;
         }
         if (!remote) continue;
 
         for (const accId of remote.accounts) {
-          const [details, balances, txs] = await Promise.all([
-            gc<{ account: { iban?: string; name?: string; ownerName?: string; currency?: string } }>(`/accounts/${accId}/details/`, { token }),
-            gc<{ balances: { balanceAmount: { amount: string; currency: string }; balanceType: string }[] }>(`/accounts/${accId}/balances/`, { token }),
-            gc<{ transactions: { booked: GcTx[] } }>(`/accounts/${accId}/transactions/`, { token }),
+          const [details, balances] = await Promise.all([
+            gc<{
+              account: { iban?: string; name?: string; ownerName?: string; currency?: string };
+            }>(`/accounts/${accId}/details/`, { token }),
+            gc<{
+              balances: {
+                balanceAmount: { amount: string; currency: string };
+                balanceType: string;
+              }[];
+            }>(`/accounts/${accId}/balances/`, { token }),
           ]);
-          const bal = balances.balances.find((b) => b.balanceType === "interimAvailable") ?? balances.balances[0];
+          const bal =
+            balances.balances.find((b) => b.balanceType === "interimAvailable") ??
+            balances.balances[0];
           const { data: acc, error: accErr } = await supabase
             .from("bank_accounts")
             .upsert(
@@ -128,26 +149,48 @@ export const syncBankData = createServerFn({ method: "POST" })
           if (accErr) throw new Error(accErr.message);
           accountsSynced++;
 
-          const rows = (txs.transactions.booked ?? []).map((t, i) => ({
-            user_id: userId,
-            account_id: acc.id,
-            gc_transaction_id: t.transactionId ?? t.internalTransactionId ?? `${t.bookingDate}-${t.transactionAmount.amount}-${i}`,
-            booking_date: t.bookingDate ?? t.valueDate ?? null,
-            amount: Number(t.transactionAmount.amount),
-            currency: t.transactionAmount.currency,
-            description: t.remittanceInformationUnstructured ?? t.remittanceInformationUnstructuredArray?.join(" ") ?? null,
-            counterparty: t.creditorName ?? t.debtorName ?? null,
-          }));
-          if (rows.length) {
-            const { error: txErr } = await supabase
-              .from("bank_transactions")
-              .upsert(rows, { onConflict: "account_id,gc_transaction_id" });
-            if (txErr) throw new Error(txErr.message);
-            txSynced += rows.length;
+          // Le transazioni sono separate: un 429 (limite 4/day) non blocca l'aggiornamento del saldo.
+          let txs: { transactions: { booked: GcTx[] } } | null = null;
+          try {
+            txs = await gc<{ transactions: { booked: GcTx[] } }>(
+              `/accounts/${accId}/transactions/`,
+              { token },
+            );
+          } catch (e) {
+            errors.push(
+              `${r.institution_name ?? r.institution_id}: movimenti non sincronizzati (${e instanceof Error ? e.message : String(e)})`,
+            );
+          }
+          if (txs) {
+            const rows = (txs.transactions.booked ?? []).map((t, i) => ({
+              user_id: userId,
+              account_id: acc.id,
+              gc_transaction_id:
+                t.transactionId ??
+                t.internalTransactionId ??
+                `${t.bookingDate}-${t.transactionAmount.amount}-${i}`,
+              booking_date: t.bookingDate ?? t.valueDate ?? null,
+              amount: Number(t.transactionAmount.amount),
+              currency: t.transactionAmount.currency,
+              description:
+                t.remittanceInformationUnstructured ??
+                t.remittanceInformationUnstructuredArray?.join(" ") ??
+                null,
+              counterparty: t.creditorName ?? t.debtorName ?? null,
+            }));
+            if (rows.length) {
+              const { error: txErr } = await supabase
+                .from("bank_transactions")
+                .upsert(rows, { onConflict: "account_id,gc_transaction_id" });
+              if (txErr) throw new Error(txErr.message);
+              txSynced += rows.length;
+            }
           }
         }
       } catch (e) {
-        errors.push(`${r.institution_name ?? r.institution_id}: ${e instanceof Error ? e.message : String(e)}`);
+        errors.push(
+          `${r.institution_name ?? r.institution_id}: ${e instanceof Error ? e.message : String(e)}`,
+        );
       }
     }
     return { accountsSynced, txSynced, errors };
