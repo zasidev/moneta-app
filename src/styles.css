@@ -70,6 +70,8 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-glass-bg: var(--glass-bg);
+  --color-glass-border: var(--glass-border);
 }
 
 :root {
@@ -150,6 +152,8 @@
 
   body {
     background-color: var(--color-background);
+    background-image: var(--gradient-glass);
+    background-attachment: fixed;
     color: var(--color-foreground);
   }
 }
@@ -198,8 +202,15 @@
   --sidebar-accent: oklch(0.5 0.08 300);
   --sidebar-accent-foreground: var(--sidebar-foreground);
   --sidebar-border: oklch(0.5 0.04 300);
+  --sidebar-glass-bg: oklch(0.99 0.005 300);
+  --sidebar-glass-fg: oklch(0.15 0.025 300);
+  --sidebar-glass-accent: oklch(0.9 0.04 300);
   --panel-shadow: 0 2px 10px oklch(0.4 0.1 300 / 0.035);
   --navigation-shadow: 0 8px 32px oklch(0.19 0.025 300 / 0.2);
+  --glass-bg: oklch(1 0 0 / 0.8);
+  --glass-border: oklch(1 0 0 / 0.45);
+  --glass-shadow: 0 2px 14px oklch(0.19 0.025 300 / 0.08);
+  --gradient-glass: radial-gradient(circle at 15% 25%, color-mix(in oklch, var(--primary) 20%, transparent) 0%, transparent 48%), radial-gradient(circle at 85% 75%, color-mix(in oklch, var(--expense-accent) 20%, transparent) 0%, transparent 48%);
 }
 .dark {
   --background: oklch(0.155 0.025 300);
@@ -233,8 +244,15 @@
   --sidebar-accent: oklch(0.46 0.15 300);
   --sidebar-accent-foreground: oklch(0.99 0 0);
   --sidebar-border: var(--border);
+  --sidebar-glass-bg: oklch(0.205 0.026 300);
+  --sidebar-glass-fg: oklch(0.95 0.012 300);
+  --sidebar-glass-accent: oklch(0.30 0.07 300);
   --panel-shadow: 0 2px 10px oklch(0.1 0.02 300 / 0.1);
   --navigation-shadow: 0 8px 32px oklch(0.1 0.02 300 / 0.45);
+  --glass-bg: oklch(0.205 0.026 300 / 0.85);
+  --glass-border: oklch(1 0 0 / 0.18);
+  --glass-shadow: 0 8px 32px oklch(0 0 0 / 0.4);
+  --gradient-glass: radial-gradient(circle at 15% 25%, color-mix(in oklch, var(--primary) 12%, transparent) 0%, transparent 48%), radial-gradient(circle at 85% 75%, color-mix(in oklch, var(--expense-accent) 12%, transparent) 0%, transparent 48%);
 }
 body { font-family: var(--font-sans); }
 html { color-scheme: light; }
@@ -242,10 +260,11 @@ html.dark { color-scheme: dark; }
 .dashboard-shell { display: grid; grid-template-columns: 220px minmax(0, 1fr); }
 .dashboard-sidebar { position: sticky; top: 0; height: 100dvh; display: flex; flex-direction: column; }
 .brand-symbol { display: grid; place-items: center; width: 36px; height: 36px; border-radius: var(--radius-icon); background: var(--sidebar-accent); color: var(--sidebar-foreground); }
-.dashboard-main { padding: 28px; max-width: 1600px; width: 100%; margin-inline: auto; }
-.app-topbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 72px; margin: -28px -28px 28px; padding: 12px 28px; border-bottom: 1px solid var(--border); background: var(--card); }
+.dashboard-main { padding: 28px; padding-top: 100px; max-width: 1600px; width: 100%; margin-inline: auto; }
+.app-topbar { position: fixed; top: 0; left: 0; right: 0; width: 100%; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 72px; padding: 12px 28px; border-bottom: 1px solid var(--border); }
 .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; }
-.dashboard-panel, .stat-tile { border: 1px solid var(--border); background: var(--card); border-radius: var(--radius-panel); box-shadow: var(--panel-shadow); }
+.dashboard-panel { border: 1px solid var(--border); background: var(--glass-bg); border-radius: var(--radius-panel); box-shadow: var(--panel-shadow); backdrop-filter: blur(14px) saturate(170%); -webkit-backdrop-filter: blur(14px) saturate(170%); }
+.stat-tile { border: 1px solid var(--border); background: color-mix(in oklch, var(--card) 65%, transparent); border-radius: var(--radius-panel); box-shadow: var(--panel-shadow); backdrop-filter: blur(14px) saturate(170%); -webkit-backdrop-filter: blur(14px) saturate(170%); }
 .dashboard-panel { min-width: 0; padding: 20px; }
 .dashboard-panel h2 { font-size: 17px; font-weight: 600; }
 .stat-tile { padding: 20px 16px; display: flex; align-items: flex-start; gap: 13px; min-height: 126px; }
@@ -274,12 +293,12 @@ html.dark { color-scheme: dark; }
   .dashboard-sidebar { position: static; height: auto; padding-bottom: 12px; }
   .dashboard-sidebar > div:first-child { padding-block: 18px; }
   .nav-item { flex: 1; justify-content: center; }
-  .dashboard-main { padding: 24px; }
-  .app-topbar { margin: -24px -24px 24px; padding-inline: 24px; }
+  .dashboard-main { padding: 24px; padding-top: 92px; }
+  .app-topbar { position: fixed; top: 0; left: 0; right: 0; width: 100%; min-height: 72px; padding: 12px 24px; border-bottom: 1px solid var(--border); }
 }
 @media (max-width: 767px) {
-  .dashboard-main { padding: 22px 16px calc(110px + env(safe-area-inset-bottom, 0px)); }
-  .app-topbar { min-height: 64px; margin: -22px -16px 22px; padding: 12px 16px; }
+  .dashboard-main { padding: 22px 16px calc(110px + env(safe-area-inset-bottom, 0px)); padding-top: 84px; }
+  .app-topbar { min-height: 64px; position: fixed; top: 0; left: 0; right: 0; width: 100%; padding: 12px 16px; border-bottom: 1px solid var(--border); }
   .dashboard-sidebar { position: fixed; inset: auto 12px calc(12px + env(safe-area-inset-bottom, 0px)); height: 68px; z-index: 40; padding: 0; border: 1px solid var(--sidebar-border); border-radius: var(--radius-pill); box-shadow: var(--navigation-shadow); }
   .dashboard-sidebar > div { display: none; }
   .dashboard-main { padding: 22px 16px calc(110px + env(safe-area-inset-bottom, 0px)); }
@@ -311,5 +330,47 @@ html.dark { color-scheme: dark; }
   .stat-value { font-size: 18px; }
   .app-navigation .nav-item { font-size: 9px; }
   .financial-row > span:last-child { max-width: 110px; }
+}
+.glass {
+  background: color-mix(in oklch, var(--glass-bg) 75%, transparent);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: var(--glass-shadow);
+}
+.glass-card {
+  background: color-mix(in oklch, var(--card) 60%, transparent);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-panel);
+  backdrop-filter: blur(14px) saturate(170%);
+  -webkit-backdrop-filter: blur(14px) saturate(170%);
+  box-shadow: var(--glass-shadow);
+}
+.glass-btn {
+  background: color-mix(in oklch, var(--glass-bg) 55%, transparent);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  box-shadow: var(--glass-shadow);
+}
+.glass-btn:hover {
+  background: color-mix(in oklch, var(--glass-bg) 75%, transparent);
+  border-color: var(--ring);
+}
+.glass-control {
+  background: color-mix(in oklch, var(--card) 50%, transparent);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  box-shadow: var(--glass-shadow);
+}
+.dashboard-sidebar.glass {
+  background: var(--sidebar-glass-bg);
+  color: var(--sidebar-glass-fg);
+}
+.dashboard-sidebar.glass .brand-symbol {
+  background: var(--sidebar-glass-accent);
+  color: var(--sidebar-glass-fg);
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }

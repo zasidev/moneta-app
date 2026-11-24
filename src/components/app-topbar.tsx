@@ -34,13 +34,13 @@ export function AppTopbar({ theme, setTheme, ready }: {
     navigate({ to: "/auth" });
   }
   return (
-    <nav aria-label="Barra superiore" className="app-topbar">
+    <nav aria-label="Barra superiore" className="app-topbar glass">
       <div className="flex min-w-0 items-center gap-2 text-primary">
         <Wallet className="size-5 shrink-0" aria-hidden="true" />
         <span className="truncate text-base font-semibold text-foreground">Conto Chiaro</span>
       </div>
       <div className="flex shrink-0 items-center gap-3">
-        <Button variant="ghost" size="icon" className="size-10 rounded-full" disabled={!ready}
+        <Button variant="glass" size="icon" className="size-10 rounded-full" disabled={!ready}
           aria-label={theme === "dark" ? "Tema chiaro" : "Tema scuro"}
           title={theme === "dark" ? "Tema chiaro" : "Tema scuro"}
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
@@ -48,7 +48,7 @@ export function AppTopbar({ theme, setTheme, ready }: {
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-10 rounded-full p-0" aria-label="Menu utente" title="Menu utente">
+            <Button variant="glass" size="icon" className="size-10 rounded-full p-0" aria-label="Menu utente" title="Menu utente">
               <Avatar className="size-10 border border-border">
                 {picture && <AvatarImage src={picture} alt={name ? `Foto di ${name}` : "Foto utente"} referrerPolicy="no-referrer" />}
                 <AvatarFallback className="bg-accent text-sm font-semibold text-primary">{initials || <UserRound className="size-5" />}</AvatarFallback>
