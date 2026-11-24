@@ -13,7 +13,7 @@ const items = [
 export function AppNavigation({ current, onViewChange }: { current: string; onViewChange?: (view: string) => void }) {
   const navigate = useNavigate();
   return (
-    <aside className="dashboard-sidebar bg-sidebar text-sidebar-foreground">
+    <aside className="dashboard-sidebar glass">
       <div className="flex min-w-0 items-center gap-3 px-5 py-8">
         <span className="brand-symbol shrink-0"><Wallet size={23} /></span>
         <span className="truncate text-xl font-semibold">Conto Chiaro</span>

@@ -224,7 +224,7 @@ function Dashboard() {
   );
 
   return (
-    <main className="dashboard-shell min-h-screen bg-background text-foreground">
+    <main className="dashboard-shell min-h-screen text-foreground">
       <AppNavigation current={view} onViewChange={(name) => {
         setView(name);
         navigate({ to: "/dashboard", search: { view: name }, replace: true });
@@ -249,7 +249,7 @@ function Dashboard() {
               title="Valuta dei grafici"
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
-              className="currency-control h-11 min-w-0 rounded-md border border-input bg-card px-2 text-sm text-foreground"
+              className="currency-control h-11 min-w-0 glass-control px-2 text-sm text-foreground"
             >
               {Array.from(
                 new Set([
@@ -263,7 +263,7 @@ function Dashboard() {
                 </option>
               ))}
             </select>
-            <label className="month-control flex h-11 min-w-0 items-center gap-2 rounded-md border border-input bg-card px-3">
+            <label className="month-control flex h-11 min-w-0 items-center gap-2 glass-control px-3">
               <CalendarDays size={17} className="text-primary" />
               <input
                 aria-label="Mese"
@@ -275,14 +275,14 @@ function Dashboard() {
                 className="w-full min-w-0 bg-transparent text-sm outline-none sm:w-32"
               />
             </label>
-            <Button
-              variant="outline"
-              size="icon"
-              title={hidden ? "Mostra saldi" : "Nascondi saldi"}
-              aria-label={hidden ? "Mostra saldi" : "Nascondi saldi"}
-              aria-pressed={hidden}
-              onClick={() => setHidden(!hidden)}
-            >
+              <Button
+                variant="glass"
+                size="icon"
+                title={hidden ? "Mostra saldi" : "Nascondi saldi"}
+                aria-label={hidden ? "Mostra saldi" : "Nascondi saldi"}
+                aria-pressed={hidden}
+                onClick={() => setHidden(!hidden)}
+              >
               {hidden ? <EyeOff /> : <Eye />}
             </Button>
             <Button
@@ -370,7 +370,7 @@ function Dashboard() {
               </div>
             </div>
             <div className="dashboard-grid mt-5">
-              <section className="dashboard-panel">
+              <section className="dashboard-panel glass">
                 <div className="grid min-w-0 gap-3 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
                   <h2>Andamento entrate e uscite</h2>
                   <div className="flex gap-4 text-xs text-muted-foreground">
@@ -451,7 +451,7 @@ function Dashboard() {
                   Ultimi 6 mesi · fino a 200 movimenti sincronizzati
                 </p>
               </section>
-              <section className="dashboard-panel">
+              <section className="dashboard-panel glass">
                 <h2>Spese per conto</h2>
                 <div className="mt-5 flex min-h-60 flex-wrap items-center justify-center gap-4">
                   {hidden || !ready ? (
@@ -516,7 +516,7 @@ function Dashboard() {
         )}
         <div className={`${view === "Panoramica" ? "dashboard-grid" : "grid"} mt-5 gap-5`}>
           {(view === "Panoramica" || view === "Transazioni") && (
-            <section className="dashboard-panel">
+            <section className="dashboard-panel glass">
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
                 <h2>{view === "Transazioni" ? "Transazioni" : "Ultime transazioni"}</h2>
                 {view === "Panoramica" && (
@@ -551,7 +551,7 @@ function Dashboard() {
             </section>
           )}
           {(view === "Panoramica" || view === "Conti") && (
-            <section className="dashboard-panel">
+            <section className="dashboard-panel glass">
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
                 <h2>I tuoi conti</h2>
                 {view === "Panoramica" ? (
@@ -672,7 +672,7 @@ function ConnectBankDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button variant="glass">
           <Plus />
           Collega banca
         </Button>
@@ -693,9 +693,9 @@ function ConnectBankDialog() {
             <p className="p-3 text-sm text-destructive">{(inst.error as Error).message}</p>
           )}
           {filtered.map((i) => (
-            <Button
-              variant="ghost"
-              key={i.id}
+              <Button
+                variant="glass"
+                key={i.id}
               disabled={!!busy}
               onClick={() => connect(i.id, i.name)}
               className="flex h-auto w-full justify-start gap-3 whitespace-normal px-3 py-2 text-left"
