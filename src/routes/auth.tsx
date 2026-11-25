@@ -13,12 +13,12 @@ export const Route = createFileRoute("/auth")({
   }),
   head: () => ({
     meta: [
-      { title: "Accedi — Conto Chiaro" },
-      { name: "description", content: "Accedi a Conto Chiaro per gestire le tue spese personali." },
-      { property: "og:title", content: "Accedi — Conto Chiaro" },
+      { title: "Accedi — Moneta" },
+      { name: "description", content: "Accedi a Moneta per gestire le tue spese personali." },
+      { property: "og:title", content: "Accedi — Moneta" },
       {
         property: "og:description",
-        content: "Accedi a Conto Chiaro per gestire le tue spese personali.",
+        content: "Accedi a Moneta per gestire le tue spese personali.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -94,7 +94,7 @@ function AuthPage() {
   return (
     <main className="min-h-screen grid place-items-center bg-background px-4">
       <div className="w-full max-w-sm">
-        <h1 className="font-display text-4xl text-foreground">Conto Chiaro</h1>
+        <h1 className="font-display text-4xl text-foreground">Moneta</h1>
         <p className="mt-2 text-muted-foreground">
           {mode === "in" ? "Bentornato." : "Crea il tuo account."}
         </p>

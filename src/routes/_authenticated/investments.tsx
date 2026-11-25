@@ -39,9 +39,9 @@ import * as z from "zod";
 export const Route = createFileRoute("/_authenticated/investments")({
   head: () => ({
     meta: [
-      { title: "Investimenti — Conto Chiaro" },
+      { title: "Investimenti — Moneta" },
       { name: "description", content: "Il tuo portafoglio titoli e valore attuale." },
-      { property: "og:title", content: "Investimenti — Conto Chiaro" },
+      { property: "og:title", content: "Investimenti — Moneta" },
       { property: "og:description", content: "Il tuo portafoglio titoli e valore attuale." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -134,7 +134,7 @@ function Investments() {
             <div className="min-w-0">
               <h1 className="truncate text-2xl font-semibold sm:text-3xl">Investimenti</h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                Portafoglio titoli · Conto Chiaro
+                Portafoglio titoli · Moneta
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">

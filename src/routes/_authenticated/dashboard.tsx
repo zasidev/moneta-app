@@ -7,12 +7,8 @@ import {
   ArrowUpRight,
   ArrowRight,
   Building2,
-  CalendarDays,
-  ChartNoAxesCombined,
-  CreditCard,
   Eye,
   EyeOff,
-  House,
   LogOut,
   Percent,
   Plus,
@@ -38,6 +34,8 @@ import { useDashboardPreferences } from "@/hooks/use-dashboard-preferences";
 import { AppNavigation } from "@/components/app-navigation";
 import { AppTopbar } from "@/components/app-topbar";
 import { TransactionRow } from "@/components/transaction-row";
+import { CurrencyDropdown } from "@/components/dashboard/currency-dropdown";
+import { MonthDropdown } from "@/components/dashboard/month-dropdown";
 import { includedTransactions, transactionTotals } from "@/lib/financial-statistics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,18 +48,24 @@ import {
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  validateSearch: (s: Record<string, unknown>): { ref?: string | undefined; view?: string | undefined } => ({
+  validateSearch: (
+    s: Record<string, unknown>,
+  ): { ref?: string | undefined; view?: string | undefined } => ({
     ref: typeof s["ref"] === "string" ? s["ref"] : undefined,
-    view: typeof s["view"] === "string" && ["Panoramica", "Transazioni", "Conti", "Analisi"].includes(s["view"]) ? s["view"] : undefined,
+    view:
+      typeof s["view"] === "string" &&
+      ["Panoramica", "Transazioni", "Conti", "Analisi"].includes(s["view"])
+        ? s["view"]
+        : undefined,
   }),
   head: () => ({
     meta: [
-      { title: "Panoramica — Conto Chiaro" },
+      { title: "Panoramica — Moneta" },
       {
         name: "description",
         content: "Saldi, entrate, uscite e movimenti dei tuoi conti collegati.",
       },
-      { property: "og:title", content: "Panoramica — Conto Chiaro" },
+      { property: "og:title", content: "Panoramica — Moneta" },
       {
         property: "og:description",
         content: "Saldi, entrate, uscite e movimenti dei tuoi conti collegati.",
@@ -88,7 +92,9 @@ function Dashboard() {
   const [syncing, setSyncing] = useState(false);
   const handledRef = useRef(false);
   const [view, setView] = useState<string>(requestedView ?? "Panoramica");
-  useEffect(() => { setView(requestedView ?? "Panoramica"); }, [requestedView]);
+  useEffect(() => {
+    setView(requestedView ?? "Panoramica");
+  }, [requestedView]);
   const [month, setMonth] = useState(monthKey(new Date()));
   const [search, setSearch] = useState("");
   const [currency, setCurrency] = useState("EUR");
@@ -98,12 +104,17 @@ function Dashboard() {
   const exclusions = useQuery({
     queryKey: ["transaction-exclusions"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("transaction_exclusions").select("transaction_id");
+      const { data, error } = await supabase
+        .from("transaction_exclusions")
+        .select("transaction_id");
       if (error) throw error;
       return data ?? [];
     },
   });
-  const excludedIds = useMemo(() => new Set((exclusions.data ?? []).map((row) => row.transaction_id)), [exclusions.data]);
+  const excludedIds = useMemo(
+    () => new Set((exclusions.data ?? []).map((row) => row.transaction_id)),
+    [exclusions.data],
+  );
   async function toggleExclusion(id: string) {
     if (pendingExclusion) return;
     setPendingExclusion(id);
@@ -113,13 +124,19 @@ function Dashboard() {
       if (authError || !auth.user) throw new Error("Accedi di nuovo per modificare il movimento");
       const { error } = excluded
         ? await supabase.from("transaction_exclusions").delete().eq("transaction_id", id)
-        : await supabase.from("transaction_exclusions").insert({ transaction_id: id, user_id: auth.user.id });
+        : await supabase
+            .from("transaction_exclusions")
+            .insert({ transaction_id: id, user_id: auth.user.id });
       if (error) throw error;
       await qc.invalidateQueries({ queryKey: ["transaction-exclusions"] });
-      toast.success(excluded ? "Movimento incluso nelle statistiche" : "Movimento escluso dalle statistiche");
+      toast.success(
+        excluded ? "Movimento incluso nelle statistiche" : "Movimento escluso dalle statistiche",
+      );
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Modifica non riuscita");
-    } finally { setPendingExclusion(null); }
+    } finally {
+      setPendingExclusion(null);
+    }
   }
 
   const accounts = useQuery({
@@ -179,7 +196,9 @@ function Dashboard() {
     () => (txs.data ?? []).filter((t) => t.booking_date?.startsWith(month)),
     [txs.data, month],
   );
-  const rows = includedTransactions(monthRows, excludedIds).filter((t) => (t.currency ?? "EUR") === currency);
+  const rows = includedTransactions(monthRows, excludedIds).filter(
+    (t) => (t.currency ?? "EUR") === currency,
+  );
   const { income, spending } = transactionTotals(rows);
   const balances = useMemo(
     () =>
@@ -225,11 +244,14 @@ function Dashboard() {
 
   return (
     <main className="dashboard-shell min-h-screen text-foreground">
-      <AppNavigation current={view} onViewChange={(name) => {
-        setView(name);
-        navigate({ to: "/dashboard", search: { view: name }, replace: true });
-        window.scrollTo({ top: 0, behavior: "instant" });
-      }} />
+      <AppNavigation
+        current={view}
+        onViewChange={(name) => {
+          setView(name);
+          navigate({ to: "/dashboard", search: { view: name }, replace: true });
+          window.scrollTo({ top: 0, behavior: "instant" });
+        }}
+      />
       <div className="dashboard-main min-w-0">
         <AppTopbar theme={theme} setTheme={setTheme} ready={ready} />
         <header className="dashboard-header grid min-w-0 gap-4 pb-6 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
@@ -240,49 +262,30 @@ function Dashboard() {
                 month: "long",
                 year: "numeric",
               })}{" "}
-              · Conto Chiaro
+              · Moneta
             </p>
           </div>
           <div className="dashboard-toolbar">
-            <select
-              aria-label="Valuta dei grafici"
-              title="Valuta dei grafici"
+            <CurrencyDropdown
               value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              className="currency-control h-11 min-w-0 glass-control px-2 text-sm text-foreground"
-            >
-              {Array.from(
+              onChange={setCurrency}
+              currencies={Array.from(
                 new Set([
                   "EUR",
                   ...(txs.data ?? []).map((t) => t.currency ?? "EUR"),
                   ...(accounts.data ?? []).map((a) => a.currency ?? "EUR"),
                 ]),
-              ).map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-            <label className="month-control flex h-11 min-w-0 items-center gap-2 glass-control px-3">
-              <CalendarDays size={17} className="text-primary" />
-              <input
-                aria-label="Mese"
-                type="month"
-                value={month}
-                onChange={(e) => {
-                  if (e.target.value) setMonth(e.target.value);
-                }}
-                className="w-full min-w-0 bg-transparent text-sm outline-none sm:w-32"
-              />
-            </label>
-              <Button
-                variant="glass"
-                size="icon"
-                title={hidden ? "Mostra saldi" : "Nascondi saldi"}
-                aria-label={hidden ? "Mostra saldi" : "Nascondi saldi"}
-                aria-pressed={hidden}
-                onClick={() => setHidden(!hidden)}
-              >
+              )}
+            />
+            <MonthDropdown value={month} onChange={setMonth} />
+            <Button
+              variant="glass"
+              size="icon"
+              title={hidden ? "Mostra saldi" : "Nascondi saldi"}
+              aria-label={hidden ? "Mostra saldi" : "Nascondi saldi"}
+              aria-pressed={hidden}
+              onClick={() => setHidden(!hidden)}
+            >
               {hidden ? <EyeOff /> : <Eye />}
             </Button>
             <Button
@@ -540,7 +543,16 @@ function Dashboard() {
               )}
               <ul className="mt-4 divide-y divide-border">
                 {(view === "Panoramica" ? shownRows.slice(0, 5) : shownRows).map((t) => (
-                  <TransactionRow key={t.id} transaction={t} excluded={excludedIds.has(t.id)} pending={pendingExclusion !== null || exclusions.isLoading || !!exclusions.error} money={money} onToggle={() => toggleExclusion(t.id)} />
+                  <TransactionRow
+                    key={t.id}
+                    transaction={t}
+                    excluded={excludedIds.has(t.id)}
+                    pending={
+                      pendingExclusion !== null || exclusions.isLoading || !!exclusions.error
+                    }
+                    money={money}
+                    onToggle={() => toggleExclusion(t.id)}
+                  />
                 ))}
                 {!shownRows.length && (
                   <li className="py-10 text-center text-sm text-muted-foreground">
@@ -568,7 +580,10 @@ function Dashboard() {
               </div>
               <ul className="mt-4 divide-y divide-border">
                 {(accounts.data ?? []).map((a) => (
-                  <li key={a.id} className="financial-row grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-4">
+                  <li
+                    key={a.id}
+                    className="financial-row grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-4"
+                  >
                     <span className="transaction-icon">
                       <Building2 size={21} />
                     </span>
@@ -662,9 +677,12 @@ function ConnectBankDialog() {
           redirectUrl: `${window.location.origin}/dashboard`,
         },
       });
+      console.log("[connect] link ricevuto:", link);
       window.location.href = link;
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Errore");
+      const err = e instanceof Error ? e : new Error(String(e));
+      console.error("[connect] startBankConnection failed:", err);
+      toast.error(err.message || "Errore");
       setBusy(null);
     }
   }
@@ -693,9 +711,9 @@ function ConnectBankDialog() {
             <p className="p-3 text-sm text-destructive">{(inst.error as Error).message}</p>
           )}
           {filtered.map((i) => (
-              <Button
-                variant="glass"
-                key={i.id}
+            <Button
+              variant="glass"
+              key={i.id}
               disabled={!!busy}
               onClick={() => connect(i.id, i.name)}
               className="flex h-auto w-full justify-start gap-3 whitespace-normal px-3 py-2 text-left"
