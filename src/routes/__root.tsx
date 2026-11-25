@@ -78,10 +78,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Conto Chiaro" },
+      { title: "Moneta" },
       { name: "description", content: "Spese personali con open banking" },
-      { name: "author", content: "Conto Chiaro" },
-      { property: "og:title", content: "Conto Chiaro" },
+      { name: "author", content: "Moneta" },
+      { property: "og:title", content: "Moneta" },
       { property: "og:description", content: "Spese personali con open banking" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

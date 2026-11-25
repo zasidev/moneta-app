@@ -5,13 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Conto Chiaro — Le tue spese, in chiaro" },
+      { title: "Moneta — Le tue spese, in chiaro" },
       {
         name: "description",
         content:
           "Collega i tuoi conti bancari via open banking e tieni traccia delle spese personali.",
       },
-      { property: "og:title", content: "Conto Chiaro — Le tue spese, in chiaro" },
+      { property: "og:title", content: "Moneta — Le tue spese, in chiaro" },
       {
         property: "og:description",
         content:

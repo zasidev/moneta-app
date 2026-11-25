@@ -37,7 +37,7 @@ export function AppTopbar({ theme, setTheme, ready }: {
     <nav aria-label="Barra superiore" className="app-topbar glass">
       <div className="flex min-w-0 items-center gap-2 text-primary">
         <Wallet className="size-5 shrink-0" aria-hidden="true" />
-        <span className="truncate text-base font-semibold text-foreground">Conto Chiaro</span>
+        <span className="truncate text-base font-semibold text-foreground">Moneta</span>
       </div>
       <div className="flex shrink-0 items-center gap-3">
         <Button variant="glass" size="icon" className="size-10 rounded-full" disabled={!ready}
