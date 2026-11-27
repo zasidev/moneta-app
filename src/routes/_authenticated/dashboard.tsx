@@ -176,7 +176,7 @@ function Dashboard() {
     setSyncing(true);
     try {
       const r = await syncBankData();
-      r.errors.forEach((e) => toast.error(e));
+      r.errors.forEach((e: any) => toast.error(e));
       toast.success(`Sincronizzati ${r.accountsSynced} conti e ${r.txSynced} movimenti`);
       await qc.invalidateQueries();
     } catch (e) {
@@ -673,7 +673,7 @@ function ConnectBankDialog() {
     staleTime: 3600_000,
   });
   const filtered = (inst.data ?? [])
-    .filter((i) => i.name.toLowerCase().includes(q.toLowerCase()))
+    .filter((i: any) => i.name.toLowerCase().includes(q.toLowerCase()))
     .slice(0, 50);
 
   async function connect(id: string, name: string) {
@@ -718,7 +718,7 @@ function ConnectBankDialog() {
           {inst.error && (
             <p className="p-3 text-sm text-destructive">{(inst.error as Error).message}</p>
           )}
-          {filtered.map((i) => (
+          {filtered.map((i: any) => (
             <Button
               variant="glass"
               key={i.id}
