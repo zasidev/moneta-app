@@ -21,7 +21,7 @@ serve(async (req) => {
 
     const { data, error } = await supabase
       .from("bank_accounts")
-      .select("id, name, iban, currency, balance, last_synced_at, gc_account_id, requisition_id")
+      .select("id, name, iban, currency, balance, last_synced_at, eb_account_id, requisition_id")
       .order("created_at", { ascending: false });
 
     if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });

@@ -19,7 +19,7 @@ export type Database = {
           balance: number | null
           created_at: string
           currency: string | null
-          gc_account_id: string
+          eb_account_id: string
           iban: string | null
           id: string
           last_synced_at: string | null
@@ -31,7 +31,7 @@ export type Database = {
           balance?: number | null
           created_at?: string
           currency?: string | null
-          gc_account_id: string
+          eb_account_id: string
           iban?: string | null
           id?: string
           last_synced_at?: string | null
@@ -43,7 +43,7 @@ export type Database = {
           balance?: number | null
           created_at?: string
           currency?: string | null
-          gc_account_id?: string
+          eb_account_id?: string
           iban?: string | null
           id?: string
           last_synced_at?: string | null
@@ -70,6 +70,7 @@ export type Database = {
           link: string | null
           reference: string
           requisition_id: string
+          session_id: string | null
           status: string
           user_id: string
         }
@@ -81,6 +82,7 @@ export type Database = {
           link?: string | null
           reference: string
           requisition_id: string
+          session_id?: string | null
           status?: string
           user_id?: string
         }
@@ -92,6 +94,7 @@ export type Database = {
           link?: string | null
           reference?: string
           requisition_id?: string
+          session_id?: string | null
           status?: string
           user_id?: string
         }
@@ -106,7 +109,7 @@ export type Database = {
           created_at: string
           currency: string | null
           description: string | null
-          gc_transaction_id: string
+          eb_transaction_id: string
           id: string
           user_id: string
         }
@@ -118,7 +121,7 @@ export type Database = {
           created_at?: string
           currency?: string | null
           description?: string | null
-          gc_transaction_id: string
+          eb_transaction_id: string
           id?: string
           user_id: string
         }
@@ -130,7 +133,7 @@ export type Database = {
           created_at?: string
           currency?: string | null
           description?: string | null
-          gc_transaction_id?: string
+          eb_transaction_id?: string
           id?: string
           user_id?: string
         }
