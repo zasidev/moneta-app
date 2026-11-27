@@ -25,7 +25,7 @@ serve(async (req) => {
 
     let query = supabase
       .from("bank_transactions")
-      .select("id, account_id, amount, booking_date, counterparty, currency, description, gc_transaction_id, created_at")
+      .select("id, account_id, amount, booking_date, counterparty, currency, description, eb_transaction_id, created_at")
       .order("booking_date", { ascending: false })
       .limit(Number(limit));
 

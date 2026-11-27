@@ -28,7 +28,7 @@ import {
   YAxis,
 } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
-import { listInstitutions, startBankConnection, syncBankData } from "@/lib/banking.functions";
+import { listInstitutions, startBankConnection, completeBankConnection, syncBankData } from "@/lib/banking.functions";
 import { financialValue } from "@/lib/dashboard-preferences";
 import { useDashboardPreferences } from "@/hooks/use-dashboard-preferences";
 import { AppNavigation } from "@/components/app-navigation";
@@ -50,8 +50,10 @@ import {
 export const Route = createFileRoute("/_authenticated/dashboard")({
   validateSearch: (
     s: Record<string, unknown>,
-  ): { ref?: string | undefined; view?: string | undefined } => ({
+  ): { ref?: string | undefined; code?: string | undefined; state?: string | undefined; view?: string | undefined } => ({
     ref: typeof s["ref"] === "string" ? s["ref"] : undefined,
+    code: typeof s["code"] === "string" ? s["code"] : undefined,
+    state: typeof s["state"] === "string" ? s["state"] : undefined,
     view:
       typeof s["view"] === "string" &&
       ["Panoramica", "Transazioni", "Conti", "Analisi"].includes(s["view"])
@@ -86,7 +88,7 @@ const chartColors = [
   "var(--chart-5)",
 ];
 function Dashboard() {
-  const { ref, view: requestedView } = Route.useSearch();
+  const { ref, code, state, view: requestedView } = Route.useSearch();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [syncing, setSyncing] = useState(false);
@@ -174,7 +176,7 @@ function Dashboard() {
     setSyncing(true);
     try {
       const r = await syncBankData();
-      r.errors.forEach((e) => toast.error(e));
+      r.errors.forEach((e: any) => toast.error(e));
       toast.success(`Sincronizzati ${r.accountsSynced} conti e ${r.txSynced} movimenti`);
       await qc.invalidateQueries();
     } catch (e) {
@@ -189,8 +191,15 @@ function Dashboard() {
       toast.message("Autorizzazione ricevuta, sincronizzo…");
       sync().finally(() => navigate({ to: "/dashboard", search: {}, replace: true }));
     }
+    if (code && state && !handledRef.current) {
+      handledRef.current = true;
+      toast.message("Autorizzazione ricevuta, completo il collegamento…");
+      completeBankConnection({ data: { code, state } })
+        .then(() => sync())
+        .finally(() => navigate({ to: "/dashboard", search: {}, replace: true }));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ref]);
+  }, [ref, code, state]);
 
   const monthRows = useMemo(
     () => (txs.data ?? []).filter((t) => t.booking_date?.startsWith(month)),
@@ -664,7 +673,7 @@ function ConnectBankDialog() {
     staleTime: 3600_000,
   });
   const filtered = (inst.data ?? [])
-    .filter((i) => i.name.toLowerCase().includes(q.toLowerCase()))
+    .filter((i: any) => i.name.toLowerCase().includes(q.toLowerCase()))
     .slice(0, 50);
 
   async function connect(id: string, name: string) {
@@ -672,7 +681,6 @@ function ConnectBankDialog() {
     try {
       const { link } = await startBankConnection({
         data: {
-          institutionId: id,
           institutionName: name,
           redirectUrl: `${window.location.origin}/dashboard`,
         },
@@ -710,7 +718,7 @@ function ConnectBankDialog() {
           {inst.error && (
             <p className="p-3 text-sm text-destructive">{(inst.error as Error).message}</p>
           )}
-          {filtered.map((i) => (
+          {filtered.map((i: any) => (
             <Button
               variant="glass"
               key={i.id}

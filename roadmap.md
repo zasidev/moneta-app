@@ -37,7 +37,7 @@
 - [ ] 11 — Implement monthly and yearly comparisons
 
 ## Phase 3 — Banking Automation
-- [ ] 12 — Complete GoCardless integration
+- [ ] 12 — Complete Enable Banking integration
 - [ ] 13 — Implement bank account synchronization
 - [ ] 14 — Implement automatic transaction import
 - [ ] 15 — Implement duplicate transaction prevention

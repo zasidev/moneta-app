@@ -4,8 +4,10 @@
 - Deposit CRUD uses authenticated server functions and a browser-safe date-based calculator; why: ownership is enforced and daily accrued value needs no scheduled writes.
 - Authenticated pages share AppNavigation with a mobile-only fixed bottom layout below 768px; why: consistent destinations and safe-area clearance across financial views.
 - Custom investment table types extend the generated schema in a separate typed client adapter without replacing the session; why: externally managed tables must compile while preserving per-user RLS.
-- GoCardless Bank Account Data calls live only in `src/lib/gocardless.server.ts` and are invoked from authenticated server functions in `src/lib/banking.functions.ts`; why: the secret id/key must never reach the browser and each user's data stays under RLS.
+- Enable Banking API calls live only in `supabase/functions/enablebanking-*` and are invoked from authenticated server functions in `src/lib/banking.functions.ts`; why: the secret id/key must never reach the browser and each user's data stays under RLS.
 - Bank sync is user-triggered (button + automatic run on return from the bank with `?ref=`), upserting by provider ids; why: idempotent re-syncs without duplicate transactions.
 - Dashboard display preferences live in a browser-only hook and financial formatting is centralized; why: persistent theme/privacy settings must not expose amounts through charts or secondary views.
 - Dashboard charts use synchronized transactions, grouped by month and account, without invented categories; why: the bank schema does not provide category assignments.
 - Database custom (investimenti): per tabelle non gestite da Lovable (es. `investment_holdings`, `investment_prices`) Kilo può creare migration SQL in `supabase/migrations/` su richiesta dell'utente; per le tabelle bancarie esistenti (`bank_accounts`, `bank_transactions`, `bank_requisitions`) creare migration SQL in `supabase/migrations/`.
+- Deploy edge functions: `supabase/deploy-functions.sh` (richiede SUPABASE_ACCESS_TOKEN e SUPABASE_PROJECT_REF).
+- Applica migration: `supabase/deploy-migrations.sh` (esegue `supabase db push` su `supabase/migrations/`; i file numerati vengono applicati una sola volta, stile Flyway/Liquibase).
