@@ -6,6 +6,9 @@ set -euo pipefail
 # Uso: ./supabase/deploy-functions.sh
 
 FUNCTIONS=(
+  accounts
+  balances
+  transactions
   enablebanking-institutions
   enablebanking-auth
   enablebanking-callback
