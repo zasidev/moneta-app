@@ -31,6 +31,6 @@ echo "Link progetto $SUPABASE_PROJECT_REF..."
 supabase link --project-ref "$SUPABASE_PROJECT_REF"
 
 echo "Deploy edge functions..."
-supabase functions deploy "${FUNCTIONS[@]}"
+supabase functions deploy --yes "${FUNCTIONS[@]}"
 
 echo "Deploy completato."
