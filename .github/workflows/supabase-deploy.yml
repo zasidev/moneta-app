@@ -5,6 +5,10 @@ on:
     branches: [main, master]
     paths:
       - "supabase/functions/**"
+  pull_request:
+    branches: [main, master]
+    paths:
+      - "supabase/functions/**"
 
 jobs:
   deploy:
@@ -26,4 +30,6 @@ jobs:
 
       - name: Deploy Edge Functions
         run: |
-          supabase functions deploy enablebanking-institutions enablebanking-auth enablebanking-callback enablebanking-sync
+          supabase functions deploy \
+            accounts balances transactions \
+            enablebanking-institutions enablebanking-auth enablebanking-callback enablebanking-sync
