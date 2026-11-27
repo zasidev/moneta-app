@@ -9,3 +9,5 @@
 - Dashboard display preferences live in a browser-only hook and financial formatting is centralized; why: persistent theme/privacy settings must not expose amounts through charts or secondary views.
 - Dashboard charts use synchronized transactions, grouped by month and account, without invented categories; why: the bank schema does not provide category assignments.
 - Database custom (investimenti): per tabelle non gestite da Lovable (es. `investment_holdings`, `investment_prices`) Kilo può creare migration SQL in `supabase/migrations/` su richiesta dell'utente; per le tabelle bancarie esistenti (`bank_accounts`, `bank_transactions`, `bank_requisitions`) creare migration SQL in `supabase/migrations/`.
+- Deploy edge functions: `supabase/deploy-functions.sh` (richiede SUPABASE_ACCESS_TOKEN e SUPABASE_PROJECT_REF).
+- Applica migration: `supabase/deploy-migrations.sh` (esegue `supabase db push` su `supabase/migrations/`; i file numerati vengono applicati una sola volta, stile Flyway/Liquibase).
